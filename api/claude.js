@@ -13,32 +13,56 @@ export default async function handler(req, res) {
     if (system) chutesMessages.push({ role: "system", content: system });
     chutesMessages.push(...messages);
 
-    const response = await fetch("https://api.chutes.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.CHUTES_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-ai/DeepSeek-V3-0324",
-        messages: chutesMessages,
-        max_tokens: max_tokens || 4000,
-        temperature: 0.1,
-      }),
-    });
+    // Try multiple models in order until one works
+    const models = [
+      "unsloth/Llama-3.3-70B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
+      "Qwen/Qwen2.5-72B-Instruct",
+    ];
 
-    const rawText = await response.text();
-    console.log("Status:", response.status, "Raw:", rawText.slice(0, 300));
+    let text = "";
+    let lastError = "";
 
-    const data = JSON.parse(rawText);
-    const text = data.choices?.[0]?.message?.content ?? JSON.stringify(data);
+    for (const model of models) {
+      try {
+        const response = await fetch("https://llm.chutes.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.CHUTES_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: chutesMessages,
+            max_tokens: max_tokens || 4000,
+            temperature: 0.1,
+          }),
+        });
+
+        const rawText = await response.text();
+        console.log(`Model ${model} status:`, response.status, rawText.slice(0, 100));
+
+        if (response.status === 200) {
+          const data = JSON.parse(rawText);
+          text = data.choices?.[0]?.message?.content ?? "";
+          if (text) break;
+        }
+        lastError = rawText;
+      } catch(e) {
+        lastError = e.message;
+        continue;
+      }
+    }
+
+    if (!text) {
+      return res.status(500).json({ error: "All models failed: " + lastError });
+    }
 
     return res.status(200).json({
       content: [{ type: "text", text }]
     });
 
   } catch (error) {
-    console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 }
