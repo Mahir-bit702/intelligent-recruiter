@@ -20,23 +20,23 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${process.env.CHUTES_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "deepseek-ai/DeepSeek-V3-0324",
+        model: "deepseek-ai/DeepSeek-V3",
         messages: chutesMessages,
         max_tokens: max_tokens || 4000,
+        temperature: 0.1,
       }),
     });
 
+    console.log("Chutes status:", response.status);
     const rawText = await response.text();
-    
+    console.log("Chutes response:", rawText.slice(0, 300));
+
     let text = "";
     try {
       const data = JSON.parse(rawText);
-      text = data.choices?.[0]?.message?.content ?? "";
+      text = data.choices?.[0]?.message?.content ?? JSON.stringify(data);
     } catch(e) {
-      // Return the raw error for debugging
-      return res.status(200).json({
-        content: [{ type: "text", text: rawText.slice(0, 500) }]
-      });
+      text = rawText;
     }
 
     return res.status(200).json({
