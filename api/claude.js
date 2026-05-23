@@ -6,6 +6,18 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  const MODELS = [
+    "Qwen/Qwen3-32B-TEE",
+    "moonshotai/Kimi-K2.5-TEE",
+    "moonshotai/Kimi-K2.6-TEE",
+    "zai-org/GLM-5-TEE",
+    "MiniMaxAI/MiniMax-M2.5-TEE",
+    "Qwen/Qwen3.6-27B-TEE",
+    "Qwen/Qwen3-235B-A22B-Thinking-2507",
+    "unsloth/Mistral-Nemo-Instruct-2407-TEE",
+    "Qwen/Qwen2.5-Coder-32B-Instruct-TEE",
+  ];
+
   try {
     const { system, messages, max_tokens } = req.body;
 
@@ -13,17 +25,7 @@ export default async function handler(req, res) {
     if (system) chutesMessages.push({ role: "system", content: system });
     chutesMessages.push(...messages);
 
-    // Try multiple models in order until one works
-    const models = [
-      "unsloth/Llama-3.3-70B-Instruct",
-      "meta-llama/Llama-3.3-70B-Instruct",
-      "Qwen/Qwen2.5-72B-Instruct",
-    ];
-
-    let text = "";
-    let lastError = "";
-
-    for (const model of models) {
+    for (const model of MODELS) {
       try {
         const response = await fetch("https://llm.chutes.ai/v1/chat/completions", {
           method: "POST",
@@ -40,27 +42,22 @@ export default async function handler(req, res) {
         });
 
         const rawText = await response.text();
-        console.log(`Model ${model} status:`, response.status, rawText.slice(0, 100));
+        console.log(`${model} → ${response.status}`);
 
         if (response.status === 200) {
           const data = JSON.parse(rawText);
-          text = data.choices?.[0]?.message?.content ?? "";
-          if (text) break;
+          const text = data.choices?.[0]?.message?.content ?? "";
+          if (text) {
+            return res.status(200).json({ content: [{ type: "text", text }] });
+          }
         }
-        lastError = rawText;
       } catch(e) {
-        lastError = e.message;
+        console.log(`${model} error: ${e.message}`);
         continue;
       }
     }
 
-    if (!text) {
-      return res.status(500).json({ error: "All models failed: " + lastError });
-    }
-
-    return res.status(200).json({
-      content: [{ type: "text", text }]
-    });
+    return res.status(500).json({ error: "All models unavailable. Try again later." });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
