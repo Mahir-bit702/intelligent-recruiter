@@ -13,7 +13,6 @@ export default async function handler(req, res) {
     "zai-org/GLM-5-TEE",
     "MiniMaxAI/MiniMax-M2.5-TEE",
     "Qwen/Qwen3.6-27B-TEE",
-    "Qwen/Qwen3-235B-A22B-Thinking-2507",
     "unsloth/Mistral-Nemo-Instruct-2407-TEE",
     "Qwen/Qwen2.5-Coder-32B-Instruct-TEE",
   ];
@@ -41,23 +40,28 @@ export default async function handler(req, res) {
           }),
         });
 
-        const rawText = await response.text();
-        console.log(`${model} → ${response.status}`);
+        if (response.status !== 200) continue;
 
-        if (response.status === 200) {
-          const data = JSON.parse(rawText);
-          const text = data.choices?.[0]?.message?.content ?? "";
-          if (text) {
-            return res.status(200).json({ content: [{ type: "text", text }] });
-          }
-        }
+        const data = await response.json();
+        let text = data.choices?.[0]?.message?.content ?? "";
+
+        // Strip thinking tags from reasoning models
+        text = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        // Strip markdown code blocks
+        text = text.replace(/```json|```/gi, "").trim();
+
+        if (!text) continue;
+
+        console.log("Success with model:", model);
+        return res.status(200).json({ content: [{ type: "text", text }] });
+
       } catch(e) {
         console.log(`${model} error: ${e.message}`);
         continue;
       }
     }
 
-    return res.status(500).json({ error: "All models unavailable. Try again later." });
+    return res.status(500).json({ error: "All models unavailable. Try again." });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
