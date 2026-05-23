@@ -9,7 +9,6 @@ export default async function handler(req, res) {
   try {
     const { system, messages, max_tokens } = req.body;
 
-    // Use OpenAI-compatible endpoint on Chutes
     const chutesMessages = [];
     if (system) chutesMessages.push({ role: "system", content: system });
     chutesMessages.push(...messages);
@@ -21,16 +20,25 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${process.env.CHUTES_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "anthropic/claude-sonnet-4-5",
+        model: "deepseek-ai/DeepSeek-V3-0324",
         messages: chutesMessages,
         max_tokens: max_tokens || 4000,
       }),
     });
 
-    const data = await response.json();
+    const rawText = await response.text();
+    
+    let text = "";
+    try {
+      const data = JSON.parse(rawText);
+      text = data.choices?.[0]?.message?.content ?? "";
+    } catch(e) {
+      // Return the raw error for debugging
+      return res.status(200).json({
+        content: [{ type: "text", text: rawText.slice(0, 500) }]
+      });
+    }
 
-    // Convert OpenAI format back to Anthropic format
-    const text = data.choices?.[0]?.message?.content ?? "";
     return res.status(200).json({
       content: [{ type: "text", text }]
     });
