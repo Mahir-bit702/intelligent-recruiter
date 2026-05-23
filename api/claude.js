@@ -27,23 +27,31 @@ export default async function handler(req, res) {
       }),
     });
 
-    console.log("Chutes status:", response.status);
     const rawText = await response.text();
-    console.log("Chutes response:", rawText.slice(0, 300));
+    console.log("Raw:", rawText.slice(0, 500));
 
+    const data = JSON.parse(rawText);
+    console.log("Keys:", Object.keys(data));
+
+    // Handle both streaming and non-streaming responses
     let text = "";
-    try {
-      const data = JSON.parse(rawText);
-      text = data.choices?.[0]?.message?.content ?? JSON.stringify(data);
-    } catch(e) {
-      text = rawText;
+    if (data.choices && data.choices[0]) {
+      const choice = data.choices[0];
+      text = choice.message?.content || choice.text || "";
+    } else if (data.content) {
+      text = Array.isArray(data.content) ? data.content[0]?.text : data.content;
+    } else {
+      text = JSON.stringify(data);
     }
+
+    console.log("Extracted text:", text.slice(0, 200));
 
     return res.status(200).json({
       content: [{ type: "text", text }]
     });
 
   } catch (error) {
+    console.error("Error:", error.message);
     return res.status(500).json({ error: error.message });
   }
 }
