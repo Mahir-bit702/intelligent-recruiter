@@ -2,33 +2,32 @@
 
 > **Track:** The Intelligent Recruiter  
 > **Event:** AI Marathon 2026 @ APU AIC  
-> **Theme:** LLM Everywhere
+> **Theme:** LLM Everywhere  
+> **Live Demo:** https://intelligent-recruiter.vercel.app
 
-An agentic AI system that bridges the gap between diverse talent and hiring managers — replacing static, keyword-based job boards with an intelligent 4-step reasoning pipeline.
+An agentic AI system that bridges the gap between diverse talent and hiring managers — replacing static, keyword-based job boards with an intelligent 4-agent pipeline.
 
 ---
 
 ## 🧠 Agent Architecture
 
 ```
-Job Description ──► [JD Parser Agent]        → Structured requirements
-Candidate Profiles ► [Candidate Analyzer]    → Per-candidate scoring
-All Data ──────────► [Bias Checker Agent]    → Fairness audit & flags  
-Final Data ────────► [Ranking Agent]         → Ranked list + hiring report
+Job Description ──► [JD Parser Agent]          → Structured requirements
+Candidate Profiles ► [Candidate Analyzer]      → Per-candidate scoring
+All Data ──────────► [Bias Checker Agent]      → Fairness audit & flags  
+Final Data ────────► [Ranking Agent]           → Ranked list + hiring report
 ```
-
-Each agent is a specialized LLM call with a focused system prompt — enabling multi-step reasoning that no single prompt could achieve.
 
 ---
 
 ## ✨ Features
 
-- **4-Step Agentic Pipeline** — visible, explainable reasoning chain
+- **4-Step Agentic Pipeline** — explainable reasoning chain
 - **JD Parser** — extracts must-have skills, experience, domain from any job description
 - **Candidate Analyzer** — scores each candidate across 4 dimensions
-- **Bias Checker** — flags potential gender, name, or cultural bias in evaluations
+- **Bias Checker** — flags potential gender, name, or cultural bias
 - **Ranking Agent** — produces final ranked list with hiring manager recommendations
-- **Interactive UI** — expandable candidate cards, score breakdowns, bias report
+- **Multi-format Upload** — supports PDF, DOCX, TXT, RTF, MD, CSV, JSON resumes
 
 ---
 
@@ -37,40 +36,59 @@ Each agent is a specialized LLM call with a focused system prompt — enabling m
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React (JSX) |
-| AI Engine | Claude claude-sonnet-4-20250514 via Anthropic API |
-| Hosting | Claude.ai Artifacts / Any static host |
-| Language | JavaScript (no backend required) |
+| AI Engine | LLM via Chutes API |
+| Backend | Vercel Serverless Functions |
+| Deployment | Vercel |
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the root directory based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description | Where to get it |
+|----------|-------------|-----------------|
+| `CHUTES_API_KEY` | Chutes AI API key for LLM access | https://chutes.ai/app/api |
+
+**Note:** Never commit your actual API keys. Use the `.env.example` as a template.
+
+For Vercel deployment, add the environment variable in:
+**Vercel Dashboard → Project → Settings → Environment Variables**
 
 ---
 
 ## 🚀 How to Run
 
-### Option 1: Claude.ai (Easiest)
-1. Copy the contents of `IntelligentRecruiter.jsx`
-2. Open [claude.ai](https://claude.ai)
-3. Paste the code and ask Claude to render it as an artifact
+### Option 1: Live Demo
+Visit: **https://intelligent-recruiter.vercel.app**
 
 ### Option 2: Local Development
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/intelligent-recruiter
+git clone https://github.com/Mahir-bit702/intelligent-recruiter
 cd intelligent-recruiter
 
 # Install dependencies
 npm install
 
-# Add your Anthropic API key
+# Copy environment variables
 cp .env.example .env
-# Edit .env and add: VITE_ANTHROPIC_API_KEY=your_key_here
+# Edit .env and add your CHUTES_API_KEY
 
-# Run
+# Run locally
 npm run dev
 ```
 
-### Option 3: Deploy to Vercel/Netlify
+Open `http://localhost:5173` in your browser.
+
+### Option 3: Deploy to Vercel
 1. Fork this repo
 2. Connect to Vercel
-3. Add `ANTHROPIC_API_KEY` as environment variable
+3. Add `CHUTES_API_KEY` as environment variable
 4. Deploy
 
 ---
@@ -79,18 +97,18 @@ npm run dev
 
 - Node.js 18+
 - npm or yarn
-- Anthropic API key ([get one here](https://console.anthropic.com))
+- Chutes AI API key (get one at chutes.ai)
 
 ---
 
 ## 👥 Team
 
-| Role | Responsibility |
-|------|---------------|
-| Lead Developer | Core prototype, agent pipeline |
-| Backend Dev | GitHub setup, PDF upload feature |
-| Designer | Pitch deck, architecture diagram, video demo |
-| Research & Pitch | Problem research, presentation |
+| Name | Student ID | Role |
+|------|-----------|------|
+| Mahir Faisal | TP087132 | Lead Developer — Agent pipeline, core prototype |
+| Yousef Haroon | TP085323 | Backend Developer — GitHub, deployment, documentation |
+| Sai Nyi | TP087643 | Designer — UI/UX, pitch deck, video demo |
+| Sams Sahil | TP088179 | Research & Pitch — Problem research, presentation |
 
 ---
 
@@ -98,13 +116,13 @@ npm run dev
 
 | Criteria | How We Address It |
 |---------|------------------|
-| Track Understanding (20pts) | Full pipeline covering JD analysis → candidate scoring → bias check → ranking |
-| Solution Effectiveness (15pts) | 4 specialized agents each with focused reasoning |
-| Scalability (10pts) | Stateless architecture — scales to any number of candidates/JDs |
-| Originality (20pts) | Bias Checker agent is unique differentiator — addresses ethical hiring |
-| Tool Use & AI Orchestration (10pts) | Multi-agent orchestration with Claude API |
+| Track Understanding (20pts) | Full pipeline covering JD parsing → scoring → bias check → ranking |
+| Solution Effectiveness (15pts) | Single optimized LLM call with focused agentic reasoning |
+| Scalability (10pts) | Stateless architecture — scales to any number of candidates |
+| Originality (20pts) | Bias Checker agent is unique differentiator |
+| Tool Use & AI Orchestration (10pts) | Custom 4-agent pipeline via Chutes API |
 | Architecture & Design (15pts) | Clear pipeline diagram, each agent has single responsibility |
-| Prototype Functionality (10pts) | Fully working demo with real LLM calls |
+| Prototype Functionality (10pts) | Fully working live demo at intelligent-recruiter.vercel.app |
 
 ---
 
